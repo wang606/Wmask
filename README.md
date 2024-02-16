@@ -1,6 +1,6 @@
-<img src="./images/wmask-logo.png" alt="wmask-logo" style="width:60%;" />
+<p align="center"><img src="./images/wmask-logo.png" alt="wmask-logo" style="width:60%;" /></p>
 
-<center>这是一个有趣的应用，它能给你的Windows窗口设置贴图、半透明背景或一些你想要显示的图片。</center>
+<p align="center">这是一个有趣的应用，它能给你的Windows窗口设置贴图、半透明背景或一些你想要显示的图片。</p>
 
 
 
@@ -48,7 +48,7 @@
 
   | Enabled                   | Disabled                   |
   | ------------------------- | -------------------------- |
-  | ![](./images/enabled.png) | ![](./images/disabled.png) |
+  | ![](./images/enabled.PNG) | ![](./images/disabled.PNG) |
 
   当配置已生效时有些部分的修改是不允许的
 
