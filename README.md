@@ -79,7 +79,7 @@
 
 - 右击托盘图标，点击`Quit Wmask`即可完全退出本应用
 
-## :framed_picture:使用案例
+## :framed_picture:使用案例[^1]
 
 ![](./images/捕获1.PNG)
 
