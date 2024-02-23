@@ -2,7 +2,12 @@
 
 <p align="center">这是一个有趣的应用，它能给你的Windows窗口设置贴图、半透明背景或一些你想要显示的图片。</p>
 
-[TOC]
+- [:sparkles: 应用特点](#sparkles-应用特点)
+- [:world\_map:使用说明](#world_map使用说明)
+- [:framed\_picture:使用案例](#framed_picture使用案例)
+- [:triangular\_flag\_on\_post: 未来计划](#triangular_flag_on_post-未来计划)
+- [:question: 疑惑？](#question-疑惑)
+
 
 ## :sparkles: 应用特点
 
