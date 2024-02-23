@@ -2,14 +2,28 @@
 
 <p align="center">这是一个有趣的应用，它能给你的Windows窗口设置贴图、半透明背景或一些你想要显示的图片。</p>
 
+[TOC]
 
+## :sparkles: 应用特点
 
-## :framed_picture:使用案例
+- :zap:**极速响应无延迟**
 
-| 为文件浏览器设置贴图        | 为terminal设置半透明的背景图片（甚至比自带的背景图片设置更加实用好看😁，参考[#3900](https://github.com/microsoft/terminal/issues/3900)，[#6028](https://github.com/microsoft/terminal/issues/6028)，[#7279](https://github.com/microsoft/terminal/issues/7279)） |
-| --------------------------- | ------------------------------------------------------------ |
-| ![](./images/使用案例1.PNG) | <img src="./images/使用案例2.PNG" style="zoom: 80%;" />      |
-| ![](./images/使用案例3.PNG) | <img src="./images/使用案例4.PNG" style="zoom:80%;" />       |
+| 父窗口启动时                            | 父窗口尺寸改变时                                             |
+| --------------------------------------- | ------------------------------------------------------------ |
+| <img src="./images/父窗口启动时.gif"/>  | <img src="./images/父窗口尺寸改变时.gif" style="zoom: 80%;" /> |
+| <img src="./images/父窗口启动时1.gif"/> | <img src="./images/父窗口尺寸改变时1.gif" style="zoom: 80%;" /> |
+
+- :bulb:**占用极小不吃灰**
+
+  采用GDI+渲染，不占用GPU资源，CPU、内存占用极少，可放心设置开机自启。
+
+- :droplet:**纯净原生依赖少**
+
+  整个应用采用Win32API开发，单可执行文件大小仅几百KB，无其他依赖，免安装。
+
+  无注册表操作、不影响系统、**拒绝使用inject或hook技术！**
+
+  配置文件位于可执行文件同目录下，不想要了？直接删除文件就行！
 
 ## :world_map:使用说明
 
@@ -41,7 +55,7 @@
   - `duration`: 每张图片显示时长（以毫秒为单位）
   - `opacity`: 不透明度
   - `Cancel/Confirm`: 取消/确认操作
-  
+
 - 在主界面选择一个配置，点击`Enable`即可启用配置，点击`Disable`即可禁用配置
 
 - 在主界面选择一个配置，点击`Setting`可重新配置：
@@ -60,30 +74,26 @@
 
 - 右击托盘图标，点击`Quit Wmask`即可完全退出本应用
 
-## :sparkles: 应用特点
+## :framed_picture:使用案例
 
-- :zap:**极速响应无延迟**
+![](./images/捕获1.PNG)
 
-| 父窗口启动时                            | 父窗口尺寸改变时                                             |
-| --------------------------------------- | ------------------------------------------------------------ |
-| <img src="./images/父窗口启动时.gif"/>  | <img src="./images/父窗口尺寸改变时.gif" style="zoom: 80%;" /> |
-| <img src="./images/父窗口启动时1.gif"/> | <img src="./images/父窗口尺寸改变时1.gif" style="zoom: 80%;" /> |
+![](./images/捕获2.PNG)
 
-- :bulb:**占用极小不吃灰**
+![](./images/捕获3.PNG)
 
-  采用GDI+渲染，不占用GPU资源，CPU、内存占用极少，可放心设置开机自启。
+![](./images/捕获4.PNG)
 
-- :droplet:**纯净原生依赖少**
+[^1]: 图片无版权，需自行下载
 
-  整个应用采用Win32API开发，单可执行文件大小仅几百KB，无其他依赖，免安装。
+## :triangular_flag_on_post: 未来计划
 
-  无注册表操作、不影响系统、**拒绝使用inject或hook技术！**
+- [ ] 父窗口匹配机制不仅限于应用可执行文件，增加应用名称、窗口标题、桌面、缩览图、当前窗口、所有窗口等匹配方式。
+- [ ] 增加配置组功能
+- [ ] 增加动画功能（拟支持图片序列、视频、spine等方式）
 
-  配置文件位于可执行文件同目录下，不想要了？直接删除文件就行！
+## :question: 疑惑？
 
-## :bug:已知问题
-
-- 父窗口最小化较长一段时间后restore，图片会不可见，需要手动resize一下父窗口才能刷新出图像
-- 部分应用及窗口无法匹配
+- Windows Defender报毒？参考[#2](https://github.com/wang606/Wmask/issues/2)
 - more？[open a new issue](https://github.com/wang606/wmask/issues/new)!
 
