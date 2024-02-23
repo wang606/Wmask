@@ -49,7 +49,7 @@ void RegisterWmaskConfigPanelClass() {
 
 HWND CreateWmaskConfigPanelWindow(HWND parent, const WmaskConfig& wc) {
 	// UI constant
-	int width = 500, height = 550; 
+	int width = 500, height = 500; 
 	int padding = 10; 
 	int rowHeight = 24;
 	int importButtonWidth = 180; 
@@ -83,13 +83,11 @@ HWND CreateWmaskConfigPanelWindow(HWND parent, const WmaskConfig& wc) {
 	int yshiftEditWidth = 80;
 	int verticalComboboxWidth = geometryWidth - padding * 5 - verticalLabelWidth - yshiftLabelWidth - yshiftEditWidth; 
 	int playWidth = width - padding * 2; 
-	int playHeight = rowHeight * 4 + padding * 3; 
-	int playLabelWidth = 80; 
-	int playComboboxWidth = playWidth - padding * 3 - playLabelWidth; 
-	int durationLabelWidth = 80; 
-	int fadedurationLabelWidth = 100; 
-	int durationEditWidth = (playWidth - padding * 5 - durationLabelWidth - fadedurationLabelWidth) / 2; 
-	int fadedurationEditWidth = durationEditWidth; 
+	int playHeight = rowHeight * 3 + padding * 2; 
+	int playLabelWidth = 80;
+	int durationLabelWidth = 80;
+	int durationEditWidth = 80;
+	int playComboboxWidth = playWidth - padding * 5 - playLabelWidth - durationLabelWidth - durationEditWidth; 
 	int opacityLabelWidth = 80; 
 	int opacityTrackWidth = playWidth - padding * 3 - opacityLabelWidth; 
 	int cancelButtonWidth = 100; 
@@ -118,7 +116,7 @@ HWND CreateWmaskConfigPanelWindow(HWND parent, const WmaskConfig& wc) {
 	}; 
 	importButtonHwnd = CW(L"BUTTON", L"Import", importButtonWidth, rowHeight, ID_Import); 
 	exportButtonHwnd = CW(L"BUTTON", L"Export", exportButtonWidth, rowHeight, ID_Export); 
-	deleteButtonHwnd = CW(L"BUTTON", L"Delete", deleteButtonWidth, rowHeight, ID_Delete, NULL, padding); 
+	deleteButtonHwnd = CW(L"BUTTON", L"Delete", deleteButtonWidth, rowHeight, ID_Delete, NULL, padding, rowHeight); 
 	
 	CW(L"BUTTON", L"Basic", basicWidth, basicHeight, NULL, BS_GROUPBOX, padding * 2, rowHeight);
 	CW(L"STATIC", L"name: ", nameLabelWidth, rowHeight); 
@@ -165,16 +163,14 @@ HWND CreateWmaskConfigPanelWindow(HWND parent, const WmaskConfig& wc) {
 
 	CW(L"BUTTON", L"Play", playWidth, playHeight, NULL, BS_GROUPBOX, padding * 2, rowHeight); 
 	CW(L"STATIC", L"play mode: ", playLabelWidth, rowHeight); 
-	playComboboxHwnd = CW(L"COMBOBOX", NULL, playComboboxWidth, rowHeight, NULL, CBS_DROPDOWNLIST, padding * 2);
+	playComboboxHwnd = CW(L"COMBOBOX", NULL, playComboboxWidth, rowHeight, NULL, CBS_DROPDOWNLIST);
 	ComboBox_AddString(playComboboxHwnd, L"Repeat");
 	ComboBox_AddString(playComboboxHwnd, L"Loop");
 	ComboBox_AddString(playComboboxHwnd, L"Shuffle");
 	ComboBox_SetCurSel(playComboboxHwnd, 0);
 	CW(L"STATIC", L"duration: ", durationLabelWidth, rowHeight); 
-	durationEditHwnd = CW(L"EDIT", NULL, durationEditWidth, rowHeight, NULL, WS_BORDER | ES_NUMBER); 
-	CW(L"STATIC", L"fade duration: ", fadedurationLabelWidth, rowHeight); 
-	fadedurationEditHwnd = CW(L"EDIT", NULL, fadedurationEditWidth, rowHeight, NULL, WS_BORDER | ES_NUMBER, padding * 2); 
-	CW(L"STATIC", L"Opacity: ", opacityLabelWidth, rowHeight); 
+	durationEditHwnd = CW(L"EDIT", NULL, durationEditWidth, rowHeight, NULL, WS_BORDER | ES_NUMBER, padding * 2); 
+	CW(L"STATIC", L"opacity: ", opacityLabelWidth, rowHeight); 
 	opacityTrackHwnd = CW(L"msctls_trackbar32", NULL, opacityTrackWidth, rowHeight, NULL, NULL, padding, rowHeight + padding * 2);
 	SendMessage(opacityTrackHwnd, TBM_SETRANGEMIN, FALSE, 0); 
 	SendMessage(opacityTrackHwnd, TBM_SETRANGEMAX, FALSE, 255); 
@@ -216,7 +212,6 @@ void _loadConfig(const WmaskConfig& wc) {
 	Edit_SetText(yshiftEditHwnd, std::to_wstring(wc.yshift).c_str());
 	ComboBox_SetCurSel(playComboboxHwnd, wc.playmode);
 	Edit_SetText(durationEditHwnd, std::to_wstring(wc.duration).c_str());
-	Edit_SetText(fadedurationEditHwnd, std::to_wstring(wc.fadeduration).c_str());
 	SendMessage(opacityTrackHwnd, TBM_SETPOS, TRUE, wc.opacity);
 }
 
@@ -242,8 +237,6 @@ void _formConfig(WmaskConfig& wc) {
 	wc.playmode = (WmaskConfig::PlayMode)ComboBox_GetCurSel(playComboboxHwnd); 
 	Edit_GetText(durationEditHwnd, text, MAX_PATH); 
 	wc.duration = std::stoi(text); 
-	Edit_GetText(fadedurationEditHwnd, text, MAX_PATH); 
-	wc.fadeduration = std::stoi(text); 
 	wc.opacity = (int)SendMessage(opacityTrackHwnd, TBM_GETPOS, 0, 0); 
 	free(text); 
 }

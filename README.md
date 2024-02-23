@@ -6,9 +6,10 @@
 
 ## :framed_picture:使用案例
 
-| <img src="./images/pokemon.ico" width=24 />为文件浏览器设置[宝可梦贴图](https://www.pokemon.com/us/pokedex) | <img src="./images/terminal.ico" width=24 />为terminal设置半透明的背景图片（甚至比自带的背景图片设置更加实用好看:grin:，参考[#3900](https://github.com/microsoft/terminal/issues/3900)，[#6028](https://github.com/microsoft/terminal/issues/6028)，[7279](https://github.com/microsoft/terminal/issues/7279)） |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| ![](./images/使用案例1.PNG)                                  | <img src="./images/使用案例2.PNG" style="zoom: 80%;" />      |
+| 为文件浏览器设置贴图        | 为terminal设置半透明的背景图片（甚至比自带的背景图片设置更加实用好看😁，参考[#3900](https://github.com/microsoft/terminal/issues/3900)，[#6028](https://github.com/microsoft/terminal/issues/6028)，[#7279](https://github.com/microsoft/terminal/issues/7279)） |
+| --------------------------- | ------------------------------------------------------------ |
+| ![](./images/使用案例1.PNG) | <img src="./images/使用案例2.PNG" style="zoom: 80%;" />      |
+| ![](./images/使用案例3.PNG) | <img src="./images/使用案例4.PNG" style="zoom:80%;" />       |
 
 ## :world_map:使用说明
 
@@ -38,10 +39,9 @@
     - `Loop`: 依次显示每张图片
     - `Shuffle`: 随机显示图片
   - `duration`: 每张图片显示时长（以毫秒为单位）
-  - `fade duration`: 图片切换时淡入淡出时长（以毫秒为单位）**比较耗性能，建议取为0，即不开启淡入淡出**
   - `opacity`: 不透明度
   - `Cancel/Confirm`: 取消/确认操作
-
+  
 - 在主界面选择一个配置，点击`Enable`即可启用配置，点击`Disable`即可禁用配置
 
 - 在主界面选择一个配置，点击`Setting`可重新配置：
@@ -54,7 +54,7 @@
 
 - 配置好后可直接关闭主界面，应用最小化到托盘，右击托盘列出目前所有配置：
 
-  ![](./images/托盘列表.png)
+  <p align="center"><img src="./images/托盘列表.png" /></p>
 
   点击配置即可启用/禁用配置
 
@@ -77,13 +77,12 @@
 
   整个应用采用Win32API开发，单可执行文件大小仅几百KB，无其他依赖，免安装。
 
-  配置文件位于可执行文件同目录下，无注册表操作、不影响系统
+  无注册表操作、不影响系统、**拒绝使用inject或hook技术！**
 
-  不想要了？直接删除文件就行！
+  配置文件位于可执行文件同目录下，不想要了？直接删除文件就行！
 
 ## :bug:已知问题
 
-- ~~多个terminal共存时，关闭一个terminal窗口，应用将无响应~~
 - 父窗口最小化较长一段时间后restore，图片会不可见，需要手动resize一下父窗口才能刷新出图像
 - 部分应用及窗口无法匹配
 - more？[open a new issue](https://github.com/wang606/wmask/issues/new)!

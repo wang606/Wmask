@@ -14,7 +14,6 @@ WmaskConfig::WmaskConfig() {
 	this->yshift = 0; 
 	this->playmode = WmaskConfig::PlayMode::PM_REPEAT; 
 	this->duration = 10000; 
-	this->fadeduration = 200; 
 	this->opacity = 240; 
 }
 
@@ -32,7 +31,6 @@ WmaskConfig::WmaskConfig(const WmaskConfig* w) {
 	this->yshift = w->yshift; 
 	this->playmode = w->playmode; 
 	this->duration = w->duration; 
-	this->fadeduration = w->fadeduration; 
 	this->opacity = w->opacity; 
 }
 
@@ -50,7 +48,6 @@ void to_json(json& j, const WmaskConfig& w) {
 	j["yshift"] = w.yshift; 
 	j["playmode"] = w.playmode; 
 	j["duration"] = w.duration; 
-	j["fadeduration"] = w.fadeduration; 
 	j["opacity"] = w.opacity; 
 }
 
@@ -68,6 +65,5 @@ void from_json(const json& j, WmaskConfig& w) {
 	w.yshift = j["yshift"]; 
 	w.playmode = j["playmode"].template get<WmaskConfig::PlayMode>(); 
 	w.duration = j["duration"]; 
-	w.fadeduration = j["fadeduration"]; 
 	w.opacity = j["opacity"]; 
 }

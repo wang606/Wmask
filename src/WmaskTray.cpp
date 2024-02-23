@@ -30,7 +30,7 @@ void PopupWmaskTrayMenu(HWND hwnd) {
 	for (auto i : gWmaskConfigs) {
 		gConfigNames.push_back(i.first); 
 		UINT uFlags = i.second.active ? MF_STRING | MF_CHECKED : MF_STRING; 
-		AppendMenu(hMenu, uFlags, uid, i.first.c_str());
+		AppendMenu(hMenu, uFlags, uid, i.second.active ? (i.first + L" (" + std::to_wstring(gWmaskImages[i.first].size()) + L")").c_str() : i.first.c_str());
 		uid += 1; 
 	}
 	AppendMenu(hMenu, MF_SEPARATOR, NULL, NULL);

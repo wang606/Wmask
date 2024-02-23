@@ -70,7 +70,6 @@ public:
 
 	PlayMode playmode; 
 	int duration; 
-	int fadeduration; 
 	int opacity; 
 
 	WmaskConfig(); 
