@@ -1,6 +1,6 @@
 #include "WmaskImage.h"
 
-std::vector<std::wstring> globImagePaths(std::wstring dirPath);
+std::vector<std::wstring> _GlobImagePaths(std::wstring dirPath);
 Rect _GetImageGeometry(int parentW, int parentH, int imageW, int imageH, const WmaskConfig* pWC);
 bool wmaskImageUpdateResource(HWND hwnd);
 bool wmaskImageUpdateSize(HWND hwnd); 
@@ -30,7 +30,7 @@ HWND CreateWmaskImageWindow(HWND parent, const WmaskConfig* pWC) {
 	WmaskImageData* pData = new WmaskImageData(); 
 	pData->wc = pWC; 
 	pData->parentHwnd = parent; 
-	pData->imagePaths = globImagePaths(pWC->dirpath); 
+	pData->imagePaths = _GlobImagePaths(pWC->dirpath); 
 	if (pData->imagePaths.size() < 1) {
 		// MessageBox(NULL, (L"no image found under directory: " + pWC->dirpath).c_str(), L"Error", MB_ICONERROR | MB_OK); 
 		delete pData; 
@@ -50,7 +50,7 @@ HWND CreateWmaskImageWindow(HWND parent, const WmaskConfig* pWC) {
 	return hwnd; 
 }
 
-std::vector<std::wstring> globImagePaths(std::wstring dirPath) {
+std::vector<std::wstring> _GlobImagePaths(std::wstring dirPath) {
 	std::vector<std::wstring> imagePaths;
 	std::wstring imagePath, imageFileName;
 	WIN32_FIND_DATA fileData;  
@@ -155,7 +155,12 @@ bool wmaskImageUpdateSize(HWND hwnd) {
 	RECT parentRect;
 	GetClientRect(pData->parentHwnd, &parentRect);
 	pData->hwndRect = _GetImageGeometry(parentRect.right, parentRect.bottom, pData->curImage->GetWidth(), pData->curImage->GetHeight(), &pData->wc);
-	return SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE); 
+	BOOL a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE); 
+	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
+	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
+	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
+	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
+	return a; 
 }
 
 bool wmaskImageUpdateImage(HWND hwnd) {
@@ -210,17 +215,18 @@ bool wmaskImageOnTimeout(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRE
 			needUpdateImage = true;
 		}
 		// check for size change. 
-		WINDOWPLACEMENT wndpl = { 0 }; 
-		wndpl.length = sizeof(WINDOWPLACEMENT); 
-		GetWindowPlacement(pData->parentHwnd, &wndpl); 
 		RECT parentRect; 
 		GetClientRect(pData->parentHwnd, &parentRect); 
-		if (pData->parentCmdShow != wndpl.showCmd || parentRect.right != pData->parentW || parentRect.bottom != pData->parentH) {
-			pData->parentCmdShow = wndpl.showCmd; 
-			pData->parentW = parentRect.right; 
-			pData->parentH = parentRect.bottom; 
-			needUpdateSize = true; 
-			needUpdateImage = true; 
+		if (parentRect.right != pData->parentW || parentRect.bottom != pData->parentH) {
+			pData->parentW = parentRect.right;
+			pData->parentH = parentRect.bottom;
+			WINDOWPLACEMENT wndpl = { 0 };
+			wndpl.length = sizeof(WINDOWPLACEMENT);
+			GetWindowPlacement(pData->parentHwnd, &wndpl);
+			if (wndpl.showCmd != 2) {
+				needUpdateSize = true; 
+				needUpdateImage = true; 
+			}
 		}
 		if (needUpdateResource) result &= wmaskImageUpdateResource(hwnd); 
 		if (needUpdateSize) result &= wmaskImageUpdateSize(hwnd); 

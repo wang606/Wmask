@@ -46,7 +46,7 @@ void RegisterWmaskMainClass() {
 
 HWND CreateWmaskMainWindow() {
 	// UI init
-	HWND wmaskMainHwnd = CreateWindowEx(NULL, L"WmaskMain", L"Wmask win32 v1.0.0", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, NULL, NULL, gHINSTANCE, NULL); 
+	HWND wmaskMainHwnd = CreateWindowEx(NULL, L"WmaskMain", L"Wmask win32 v1.0.1", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, NULL, NULL, gHINSTANCE, NULL); 
 	configListHwnd = CreateWindow(L"LISTBOX", NULL, WS_VISIBLE | WS_CHILD | LBS_STANDARD | LBS_DISABLENOSCROLL, 10, 10, 320, 430, wmaskMainHwnd, (HMENU)ID_ConfigList, gHINSTANCE, NULL);
 	CreateWindow(L"BUTTON", L"New", WS_VISIBLE | WS_CHILD, 348, 430 - 24 - 4, 80, 24, wmaskMainHwnd, (HMENU)ID_New, gHINSTANCE, NULL);
 	CreateWindow(L"BUTTON", L"Setting", WS_VISIBLE | WS_CHILD, 348 + 80 + 10, 430 - 24 - 4, 80, 24, wmaskMainHwnd, (HMENU)ID_Setting, gHINSTANCE, NULL);
