@@ -1,8 +1,4 @@
-﻿#include "WmaskMain.h"
-#include "WmaskPreview.h"
-#include "WmaskConfigPanel.h"
-#include "WmaskImage.h"
-#include "WmaskTray.h"
+﻿#include "required.h"
 
 HWND configListHwnd, previewHwnd, enableButtonHwnd; 
 
@@ -13,7 +9,6 @@ bool settingButtonOnClicked(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, 
 bool enableButtonOnClicked(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
 bool wmaskMainConfirmSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
 bool wmaskMainDeleteSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
-bool wmaskMainCloseSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
 bool wmaskMainTraySlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
 bool wmaskMainOnClose(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
 bool wmaskMainOnDestroy(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
@@ -27,7 +22,6 @@ LRESULT CALLBACK WmaskMainWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	if (enableButtonOnClicked(hwnd, uMsg, wParam, lParam, result)) return result;
 	if (wmaskMainConfirmSlot(hwnd, uMsg, wParam, lParam, result)) return result;
 	if (wmaskMainDeleteSlot(hwnd, uMsg, wParam, lParam, result)) return result;
-	if (wmaskMainCloseSlot(hwnd, uMsg, wParam, lParam, result)) return result;
 	if (wmaskMainTraySlot(hwnd, uMsg, wParam, lParam, result)) return result; 
 	if (wmaskMainOnClose(hwnd, uMsg, wParam, lParam, result)) return result; 
 	if (wmaskMainOnDestroy(hwnd, uMsg, wParam, lParam, result)) return result;
@@ -46,7 +40,7 @@ void RegisterWmaskMainClass() {
 
 HWND CreateWmaskMainWindow() {
 	// UI init
-	HWND wmaskMainHwnd = CreateWindowEx(NULL, L"WmaskMain", L"Wmask win32 v1.0.1", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, NULL, NULL, gHINSTANCE, NULL); 
+	HWND wmaskMainHwnd = CreateWindowEx(NULL, L"WmaskMain", L"Wmask win32 v1.1.0", WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480, NULL, NULL, gHINSTANCE, NULL); 
 	configListHwnd = CreateWindow(L"LISTBOX", NULL, WS_VISIBLE | WS_CHILD | LBS_STANDARD | LBS_DISABLENOSCROLL, 10, 10, 320, 430, wmaskMainHwnd, (HMENU)ID_ConfigList, gHINSTANCE, NULL);
 	CreateWindow(L"BUTTON", L"New", WS_VISIBLE | WS_CHILD, 348, 430 - 24 - 4, 80, 24, wmaskMainHwnd, (HMENU)ID_New, gHINSTANCE, NULL);
 	CreateWindow(L"BUTTON", L"Setting", WS_VISIBLE | WS_CHILD, 348 + 80 + 10, 430 - 24 - 4, 80, 24, wmaskMainHwnd, (HMENU)ID_Setting, gHINSTANCE, NULL);
@@ -82,32 +76,34 @@ BOOL CALLBACK _EnumWindowsCallback(HWND hwnd, LPARAM) {
 
 bool wmaskMainOnTimeout(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result) {
 	if (uMsg == WM_TIMER) {
-		std::vector<HWND> invalidHwnds; 
-		for (auto i : gHwnd2exepaths)
-			if (!IsWindow(i.first))
-				invalidHwnds.push_back(i.first); 
-		for (auto i : invalidHwnds)
-			gHwnd2exepaths.erase(i); 
+		for (auto i = gHwnd2exepaths.begin(); i != gHwnd2exepaths.end(); )
+			if (!IsWindow((*i).first))
+				i = gHwnd2exepaths.erase(i);
+			else
+				++i; 
 		EnumWindows(_EnumWindowsCallback, 0); 
+		// 跟踪创建 wmaskImage
 		for (auto i : gWmaskConfigs) {
 			if (!i.second.active) continue; 
 			for (auto j : gHwnd2exepaths)
-				if (j.second == i.second.exepath &&
-					!gHandledHwnds[i.first].contains(j.first) &&
-					_IsValidTopWindow(j.first)) {
-					gWmaskImages[i.first].insert(CreateWmaskImageWindow(j.first, &i.second));
+				if (j.second == i.second.exepath && !gHandledHwnds[i.first].contains(j.first) && _IsValidTopWindow(j.first)) {
+					gWmaskChilds[i.first].push_back(CreateWmaskImageWindow(j.first, i.first));
 					gHandledHwnds[i.first].insert(j.first); 
 				}
 		}
 		// 跟踪销毁 wmaskImage
 		for (auto i : gWmaskConfigs) {
 			if (!i.second.active) continue; 
-			std::set<HWND> wmaskImages = gWmaskImages[i.first]; 
-			for (HWND wmaskImage : wmaskImages)
-				if (!IsWindow(wmaskImage)) gWmaskImages[i.first].erase(wmaskImage); 
-			std::set<HWND> handledHwnds = gHandledHwnds[i.first]; 
-			for (HWND handledHwnd : handledHwnds)
-				if (!_IsValidTopWindow(handledHwnd)) gHandledHwnds[i.first].erase(handledHwnd); 
+			for (auto wmaskChild = gWmaskChilds[i.first].begin(); wmaskChild != gWmaskChilds[i.first].end(); ) {
+				if (!IsWindow((*wmaskChild)->wmaskImageHwnd) || !_IsValidTopWindow((*wmaskChild)->parentHwnd)) {
+					DestroyWindow((*wmaskChild)->wmaskImageHwnd);
+					if ((*wmaskChild)->curImage != NULL) delete (*wmaskChild)->curImage;
+					gHandledHwnds[i.first].erase((*wmaskChild)->parentHwnd);
+					delete (*wmaskChild);
+					wmaskChild = gWmaskChilds[i.first].erase(wmaskChild);
+				}
+				else ++wmaskChild; 
+			}
 		}
 		result = TRUE; 
 		return true; 
@@ -172,14 +168,15 @@ bool enableButtonOnClicked(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, L
 				gWmaskConfigs[text].active ^= true;
 				Button_SetText(enableButtonHwnd, gWmaskConfigs[text].active ? L"Disable" : L"Enable"); 
 				if (gWmaskConfigs[text].active) {
-					gWmaskImages[text] = std::set<HWND>();
+					gWmaskChilds[text] = std::vector<WmaskChild*>();
 					gHandledHwnds[text] = std::set<HWND>();
 				} 
 				else {
-					std::set<HWND> wmaskImages = gWmaskImages[text]; 
-					for (HWND wmaskHwnd : wmaskImages)
-						DestroyWindow(wmaskHwnd); 
-					gWmaskImages.erase(text); 
+					for (WmaskChild* wmaskChild : gWmaskChilds[text]) {
+						DestroyWindow(wmaskChild->wmaskImageHwnd); 
+						if (wmaskChild->curImage != NULL) delete wmaskChild->curImage; 
+					}
+					gWmaskChilds.erase(text); 
 					gHandledHwnds.erase(text); 
 				}
 				free(text);
@@ -219,8 +216,8 @@ bool wmaskMainConfirmSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 			pWC->active = gWmaskConfigs[originalName].active; // keep active status
 			if (pWC->name == originalName) {
 				gWmaskConfigs[originalName] = pWC;
-				for (HWND hwnd : gWmaskImages[originalName])
-					SendMessage(hwnd, WM_USER_Update, (WPARAM)&gWmaskConfigs[originalName], 0); 
+				for (WmaskChild* wmaskChild : gWmaskChilds[originalName])
+					SendMessage(wmaskChild->wmaskImageHwnd, WM_USER_Update, (WPARAM)&gWmaskConfigs[originalName], 0); 
 			}
 			else {
 				gWmaskConfigs[pWC->name] = pWC; 
@@ -252,23 +249,12 @@ bool wmaskMainDeleteSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRE
 	else return false; 
 }
 
-bool wmaskMainCloseSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result) {
-	if (uMsg == WM_USER_Close) {
-		WmaskConfig* pWC = (WmaskConfig*)wParam; 
-		HWND wmaskImageHwnd = (HWND)lParam; 
-		gWmaskImages[pWC->name].erase(wmaskImageHwnd); 
-		gHandledHwnds[pWC->name].erase(GetParent(wmaskImageHwnd)); 
-		result = TRUE; 
-		return true; 
-	}
-	else return false; 
-}
-
 bool wmaskMainTraySlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result) {
 	if (uMsg == WM_USER_Tray) {
 		switch (lParam) {
 		case WM_LBUTTONDBLCLK:
-			ShowWindow(hwnd, SW_RESTORE); 
+			ShowWindow(hwnd, SW_RESTORE);
+			SetForegroundWindow(hwnd);
 			break; 
 		case WM_RBUTTONUP:
 			SetForegroundWindow(hwnd); 
@@ -284,14 +270,15 @@ bool wmaskMainTraySlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESU
 		gWmaskConfigs[text].active ^= true;
 		Button_SetText(enableButtonHwnd, gWmaskConfigs[text].active ? L"Disable" : L"Enable");
 		if (gWmaskConfigs[text].active) {
-			gWmaskImages[text] = std::set<HWND>();
+			gWmaskChilds[text] = std::vector<WmaskChild*>();
 			gHandledHwnds[text] = std::set<HWND>();
 		}
 		else {
-			std::set<HWND> wmaskImages = gWmaskImages[text];
-			for (HWND wmaskHwnd : wmaskImages)
-				DestroyWindow(wmaskHwnd);
-			gWmaskImages.erase(text);
+			for (WmaskChild* wmaskChild : gWmaskChilds[text]) {
+				DestroyWindow(wmaskChild->wmaskImageHwnd);
+				if (wmaskChild->curImage != NULL) delete wmaskChild->curImage;
+			}
+			gWmaskChilds.erase(text);
 			gHandledHwnds.erase(text);
 		}
 		SaveConfig();

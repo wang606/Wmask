@@ -23,11 +23,6 @@
     <ClInclude Include="required.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="WmaskConfig.h" />
-    <ClInclude Include="WmaskConfigPanel.h" />
-    <ClInclude Include="WmaskImage.h" />
-    <ClInclude Include="WmaskMain.h" />
-    <ClInclude Include="WmaskPreview.h" />
-    <ClInclude Include="WmaskTray.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

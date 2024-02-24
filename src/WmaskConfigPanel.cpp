@@ -1,4 +1,4 @@
-#include "WmaskConfigPanel.h"
+#include "required.h"
 
 std::wstring originalName; 
 HWND wmaskConfigPanelHwnd; 

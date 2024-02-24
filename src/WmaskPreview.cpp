@@ -1,4 +1,4 @@
-#include "WmaskPreview.h"
+#include "required.h"
 
 void WmaskPreviewOnPaint(HWND hwnd) {
 	Image image(gPreviewImagePath.c_str());

@@ -1,10 +1,4 @@
 #include "required.h"
-#include "WmaskConfig.h"
-#include "WmaskConfigPanel.h"
-#include "WmaskImage.h"
-#include "WmaskPreview.h"
-#include "WmaskMain.h"
-#include "WmaskTray.h"
 
 HINSTANCE gHINSTANCE;
 ULONG_PTR gGdiplusToken;
@@ -18,7 +12,7 @@ HWND gWmaskMainHwnd;
 
 std::vector<std::wstring> gConfigNames;
 std::map<std::wstring, WmaskConfig> gWmaskConfigs;
-std::map<std::wstring, std::set<HWND>> gWmaskImages;
+std::map<std::wstring, std::vector<WmaskChild*>> gWmaskChilds;
 std::map<std::wstring, std::set<HWND>> gHandledHwnds;
 std::map<HWND, std::wstring> gHwnd2exepaths;
 

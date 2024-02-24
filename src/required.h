@@ -49,12 +49,33 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 // Custom Message WmaskConfigPanel => WmaskMain
 #define WM_USER_Confirm           (WM_USER+0x0001)    // wParam: const WmaskConfig* pWC, lParam: PWSTR originalName, return: true for accepted false for rejected
 #define WM_USER_Delete            (WM_USER+0x0002)    // wParam: reserved, lParam: PWSTR originalName, return: true for accepted false for rejected
-// Custom Message WmaskImage => WmaskMain
-#define WM_USER_Close             (WM_USER+0x0003)    // wParam: const WmaskConfig* pWC, lParam: HWND wmaskImageHwnd, return: reserved
+// Custom Message WmaskTray => WmaskMain
+#define WM_USER_Tray              (WM_USER+0x0003)
 // Custom Message WmaskMain => WmaskImage
 #define WM_USER_Update            (WM_USER+0x0004)    // wParam: const WmaskConfig* pWC, lParam: reserved, return: true for success
-// Custom Message WmaskTray => WmaskMain
-#define WM_USER_Tray              (WM_USER+0x0005)
+
+struct WmaskChild {
+	std::wstring configName;
+	HWND wmaskImageHwnd; 
+	HWND parentHwnd; 
+	std::vector<std::wstring> imagePaths; 
+	int lastTime; 
+	int curIdx;
+	Image* curImage; 
+	Size parentSize; 
+	Rect wmaskImageRect; 
+	WmaskChild() :
+		configName(L""),
+		wmaskImageHwnd(NULL),
+		parentHwnd(NULL),
+		imagePaths(),
+		lastTime(0),
+		curIdx(0),
+		curImage(NULL),
+		parentSize({0, 0}),
+		wmaskImageRect({0, 0, 0, 0})
+	{}
+};
 
 extern HINSTANCE gHINSTANCE;
 extern ULONG_PTR gGdiplusToken;
@@ -68,9 +89,12 @@ extern HWND gWmaskMainHwnd;
 
 extern std::vector<std::wstring> gConfigNames;
 extern std::map<std::wstring, WmaskConfig> gWmaskConfigs; 
-extern std::map<std::wstring, std::set<HWND>> gWmaskImages; 
+extern std::map<std::wstring, std::vector<WmaskChild*>> gWmaskChilds; 
 extern std::map<std::wstring, std::set<HWND>> gHandledHwnds; 
-extern std::map<HWND, std::wstring> gHwnd2exepaths; 
+extern std::map<HWND, std::wstring> gHwnd2exepaths;
+
+const int wmaskMainRefreshDuration = 100;  // ms
+const int wmaskImageRefreshDuration = 100;  // ms
 
 inline bool _IsValidTopWindow(HWND hwnd) {
 	return IsWindow(hwnd) &&
@@ -78,3 +102,28 @@ inline bool _IsValidTopWindow(HWND hwnd) {
 		IsWindowEnabled(hwnd) &&
 		!(GetWindowLongPtr(hwnd, GWL_STYLE) & (WS_POPUP | WS_CHILD));
 }
+
+// WmaskPreview.h
+void RegisterWmaskPreviewClass(); 
+HWND CreateWmaskPreviewWindow(HWND parent, int x, int y, int w, int h);
+
+// WmaskConfigPanel.h
+void RegisterWmaskConfigPanelClass();
+HWND CreateWmaskConfigPanelWindow(HWND parent, const WmaskConfig& wc);
+
+// WmaskImage.h
+void RegisterWmaskImageClass();
+WmaskChild* CreateWmaskImageWindow(HWND parent, const std::wstring configName);
+
+// WmaskTray.h
+void CreateWmaskTray(HWND hwnd);
+void DestroyWmaskTray(HWND hwnd);
+void PopupWmaskTrayMenu(HWND hwnd);
+
+// WmaskMain.h
+void RegisterWmaskMainClass();
+HWND CreateWmaskMainWindow();
+
+void OpenConfig();
+void SaveConfig();
+

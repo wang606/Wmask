@@ -1,10 +1,10 @@
-#include "WmaskImage.h"
+#include "required.h"
 
 std::vector<std::wstring> _GlobImagePaths(std::wstring dirPath);
 Rect _GetImageGeometry(int parentW, int parentH, int imageW, int imageH, const WmaskConfig* pWC);
-bool wmaskImageUpdateResource(HWND hwnd);
-bool wmaskImageUpdateSize(HWND hwnd); 
-bool wmaskImageUpdateImage(HWND hwnd); 
+bool _wmaskImageUpdateResource(HWND hwnd);
+bool _wmaskImageUpdateSize(HWND hwnd); 
+bool _wmaskImageUpdateImage(HWND hwnd); 
 
 bool wmaskImageOnTimeout(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
 bool wmaskImageUpdateSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result);
@@ -26,11 +26,11 @@ void RegisterWmaskImageClass() {
 	RegisterClass(&wc); 
 }
 
-HWND CreateWmaskImageWindow(HWND parent, const WmaskConfig* pWC) {
-	WmaskImageData* pData = new WmaskImageData(); 
-	pData->wc = pWC; 
+WmaskChild* CreateWmaskImageWindow(HWND parent, const std::wstring configName) {
+	WmaskChild* pData = new WmaskChild(); 
+	pData->configName = configName; 
 	pData->parentHwnd = parent; 
-	pData->imagePaths = _GlobImagePaths(pWC->dirpath); 
+	pData->imagePaths = _GlobImagePaths(gWmaskConfigs[configName].dirpath);
 	if (pData->imagePaths.size() < 1) {
 		// MessageBox(NULL, (L"no image found under directory: " + pWC->dirpath).c_str(), L"Error", MB_ICONERROR | MB_OK); 
 		delete pData; 
@@ -42,12 +42,14 @@ HWND CreateWmaskImageWindow(HWND parent, const WmaskConfig* pWC) {
 	SetWindowLongPtr(hwnd, GWL_STYLE, GetWindowLongPtr(hwnd, GWL_STYLE) | WS_CHILD);
 	SetParent(hwnd, parent);
 	SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR)pData);
-	wmaskImageUpdateResource(hwnd); 
-	wmaskImageUpdateSize(hwnd); 
-	wmaskImageUpdateImage(hwnd); 
+	_wmaskImageUpdateResource(hwnd); 
+	_wmaskImageUpdateSize(hwnd); 
+	_wmaskImageUpdateImage(hwnd); 
 	UpdateWindow(hwnd); 
 	SetTimer(hwnd, 0, wmaskImageRefreshDuration, NULL); 
-	return hwnd; 
+	
+	pData->wmaskImageHwnd = hwnd; 
+	return pData; 
 }
 
 std::vector<std::wstring> _GlobImagePaths(std::wstring dirPath) {
@@ -129,10 +131,10 @@ Rect _GetImageGeometry(int parentW, int parentH, int imageW, int imageH, const W
 	return Rect(x, y, w, h); 
 }
 
-bool wmaskImageUpdateResource(HWND hwnd) {
-	WmaskImageData* pData = (WmaskImageData*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+bool _wmaskImageUpdateResource(HWND hwnd) {
+	WmaskChild* pData = (WmaskChild*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	if (pData->curImage != NULL) delete pData->curImage; 
-	switch (pData->wc.playmode) {
+	switch (gWmaskConfigs[pData->configName].playmode) {
 	case WmaskConfig::PlayMode::PM_REPEAT:
 		break; 
 	case WmaskConfig::PlayMode::PM_LOOP:
@@ -150,36 +152,31 @@ bool wmaskImageUpdateResource(HWND hwnd) {
 	return true; 
 }
 
-bool wmaskImageUpdateSize(HWND hwnd) {
-	WmaskImageData* pData = (WmaskImageData*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+bool _wmaskImageUpdateSize(HWND hwnd) {
+	WmaskChild* pData = (WmaskChild*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	RECT parentRect;
 	GetClientRect(pData->parentHwnd, &parentRect);
-	pData->hwndRect = _GetImageGeometry(parentRect.right, parentRect.bottom, pData->curImage->GetWidth(), pData->curImage->GetHeight(), &pData->wc);
-	BOOL a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE); 
-	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
-	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
-	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
-	a = SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height, SWP_NOMOVE);
-	return a; 
+	pData->wmaskImageRect = _GetImageGeometry(parentRect.right, parentRect.bottom, pData->curImage->GetWidth(), pData->curImage->GetHeight(), &gWmaskConfigs[pData->configName]);
+	return SetWindowPos(hwnd, HWND_TOP, 0, 0, pData->wmaskImageRect.Width, pData->wmaskImageRect.Height, SWP_NOMOVE);
 }
 
-bool wmaskImageUpdateImage(HWND hwnd) {
+bool _wmaskImageUpdateImage(HWND hwnd) {
 	bool result = false;
-	WmaskImageData* pData = (WmaskImageData*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	POINT ptDst = { pData->hwndRect.X, pData->hwndRect.Y };
-	SIZE size = { pData->hwndRect.Width, pData->hwndRect.Height };
+	WmaskChild* pData = (WmaskChild*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	POINT ptDst = { pData->wmaskImageRect.X, pData->wmaskImageRect.Y };
+	SIZE size = { pData->wmaskImageRect.Width, pData->wmaskImageRect.Height };
 	POINT ptSrc = { 0, 0 };
 	BLENDFUNCTION blendFunction;
 	blendFunction.BlendOp = AC_SRC_OVER;
 	blendFunction.BlendFlags = 0;
-	blendFunction.SourceConstantAlpha = pData->wc.opacity;
+	blendFunction.SourceConstantAlpha = gWmaskConfigs[pData->configName].opacity;
 	blendFunction.AlphaFormat = AC_SRC_ALPHA;
 	HDC hdc = GetDC(hwnd);
 	HDC memDC = CreateCompatibleDC(hdc);
-	HBITMAP memBitmap = CreateCompatibleBitmap(hdc, pData->hwndRect.Width, pData->hwndRect.Height);
+	HBITMAP memBitmap = CreateCompatibleBitmap(hdc, pData->wmaskImageRect.Width, pData->wmaskImageRect.Height);
 	SelectObject(memDC, memBitmap);
 	Graphics graphics(memDC);
-	graphics.DrawImage(pData->curImage, 0, 0, pData->hwndRect.Width, pData->hwndRect.Height);
+	graphics.DrawImage(pData->curImage, 0, 0, pData->wmaskImageRect.Width, pData->wmaskImageRect.Height);
 	result = UpdateLayeredWindow(hwnd, GetDC(NULL), &ptDst, &size, memDC, &ptSrc, NULL, &blendFunction, ULW_ALPHA);
 	DeleteDC(memDC);
 	DeleteObject(memBitmap);
@@ -188,9 +185,7 @@ bool wmaskImageUpdateImage(HWND hwnd) {
 
 bool wmaskImageUpdateSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result) {
 	if (uMsg == WM_USER_Update) {
-		WmaskImageData* pData = (WmaskImageData*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		pData->wc = (WmaskConfig*)wParam;
-		result = wmaskImageUpdateResource(hwnd) & wmaskImageUpdateSize(hwnd) & wmaskImageUpdateImage(hwnd);
+		result = _wmaskImageUpdateSize(hwnd) & _wmaskImageUpdateImage(hwnd);
 		return true; 
 	}
 	else return false; 
@@ -199,16 +194,11 @@ bool wmaskImageUpdateSlot(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LR
 bool wmaskImageOnTimeout(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result) {
 	if (uMsg == WM_TIMER) {
 		bool needUpdateResource = false, needUpdateSize = false, needUpdateImage = false; 
-		WmaskImageData* pData = (WmaskImageData*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		WmaskChild* pData = (WmaskChild*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (pData == NULL) return true; 
-		// check parent window
-		if (!_IsValidTopWindow(pData->parentHwnd)) {
-			DestroyWindow(hwnd); 
-			return true; 
-		}
 		pData->lastTime += wmaskImageRefreshDuration; 
 		// check for image change. 
-		if (pData->wc.playmode != WmaskConfig::PlayMode::PM_REPEAT && pData->lastTime > pData->wc.duration) {
+		if (gWmaskConfigs[pData->configName].playmode != WmaskConfig::PlayMode::PM_REPEAT && pData->lastTime > gWmaskConfigs[pData->configName].duration) {
 			pData->lastTime = 0;
 			needUpdateResource = true;
 			needUpdateSize = true;
@@ -217,20 +207,19 @@ bool wmaskImageOnTimeout(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRE
 		// check for size change. 
 		RECT parentRect; 
 		GetClientRect(pData->parentHwnd, &parentRect); 
-		if (parentRect.right != pData->parentW || parentRect.bottom != pData->parentH) {
-			pData->parentW = parentRect.right;
-			pData->parentH = parentRect.bottom;
+		if (parentRect.right != pData->parentSize.Width || parentRect.bottom != pData->parentSize.Height) {
+			pData->parentSize = { parentRect.right, parentRect.bottom };
 			WINDOWPLACEMENT wndpl = { 0 };
 			wndpl.length = sizeof(WINDOWPLACEMENT);
 			GetWindowPlacement(pData->parentHwnd, &wndpl);
-			if (wndpl.showCmd != 2) {
+			if (wndpl.showCmd != SW_SHOWMINIMIZED) {
 				needUpdateSize = true; 
 				needUpdateImage = true; 
 			}
 		}
-		if (needUpdateResource) result &= wmaskImageUpdateResource(hwnd); 
-		if (needUpdateSize) result &= wmaskImageUpdateSize(hwnd); 
-		if (needUpdateImage) result &= wmaskImageUpdateImage(hwnd); 
+		if (needUpdateResource) result &= _wmaskImageUpdateResource(hwnd); 
+		if (needUpdateSize) result &= _wmaskImageUpdateSize(hwnd); 
+		if (needUpdateImage) result &= _wmaskImageUpdateImage(hwnd); 
 		return true; 
 	}
 	else return false; 
@@ -238,13 +227,9 @@ bool wmaskImageOnTimeout(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRE
 
 bool wmaskImageOnDestroy(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT& result) {
 	if (uMsg == WM_DESTROY) {
-		WmaskImageData* pData = (WmaskImageData*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		if (pData != NULL) {
-			SendMessage(gWmaskMainHwnd, WM_USER_Close, (WPARAM)&pData->wc, (LPARAM)hwnd);
-			if (pData->curImage != NULL) delete pData->curImage;
-			delete pData;
+		WmaskChild* pData = (WmaskChild*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		if (pData != NULL)
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, NULL);
-		}
 		result = 0;
 		return true;
 	}
