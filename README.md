@@ -2,10 +2,11 @@
 
 <p align="center">这是一个有趣的应用，它能给你的Windows窗口设置贴图、半透明背景或一些你想要显示的图片。</p>
 
+> 如果你想要动画功能，请移步：[WmaskEX](https://github.com/wang606/WmaskEX)
+
 - [:sparkles: 应用特点](#sparkles-应用特点)
 - [:world\_map:使用说明](#world_map使用说明)
 - [:framed\_picture:使用案例](#framed_picture使用案例)
-- [:triangular\_flag\_on\_post: 未来计划](#triangular_flag_on_post-未来计划)
 - [:question: 疑惑？](#question-疑惑)
 
 
@@ -50,7 +51,7 @@
   - `Size`: 
     - `Fixed`: 固定尺寸，此时`Scale`代表与原图像大小比例百分值（一般用于固定大小的贴图）
     - `Fit`: 适合父窗口，此时`Scale`代表在Fit的基础上缩放百分值（一般用于响应尺寸的贴图）
-    - `Fill`: 填充父窗口，此时`Scale`代表在Fit的基础上缩放百分值（一般用于设置半透明背景图片）
+    - `Fill`: 填充父窗口，此时`Scale`代表在Fill的基础上缩放百分值（一般用于设置半透明背景图片）
   - `Horizon`: 水平对齐方式；`xshift`: 水平偏移像素值
   - `Vertical`: 垂直对齐方式；`yshift`: 垂直偏移像素值
   - `play mode`: 
@@ -90,12 +91,6 @@
 ![](./images/捕获4.PNG)
 
 [^1]: 图片无版权，需自行下载
-
-## :triangular_flag_on_post: 未来计划
-
-- [ ] 父窗口匹配机制不仅限于应用可执行文件，增加应用名称、窗口标题、桌面、缩览图、当前窗口、所有窗口等匹配方式。
-- [ ] 增加配置组功能
-- [ ] 增加动画功能（拟支持图片序列、视频、spine等方式）
 
 ## :question: 疑惑？
 
